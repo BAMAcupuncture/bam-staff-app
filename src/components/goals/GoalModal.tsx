@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Target, Calendar, FileText, Flag, AlertCircle } from 'lucide-react';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import { Goal } from '../../types';
 import { format } from 'date-fns';
 
