@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, User, Mail, Phone, Shield, AlertCircle, AlertTriangle } from 'lucide-react';
-import { useFirestoreOperations } from '../../hooks/useFirestore';
 import { useNotifications } from '../../context/NotificationContext';
 import { TeamMember } from '../../types';
 import { collection, query, where, getDocs, writeBatch, doc } from 'firebase/firestore';
