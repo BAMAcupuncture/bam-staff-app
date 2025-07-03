@@ -4,7 +4,7 @@ import { isPast, isToday } from 'date-fns';
 import { Task } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useFirestoreOperations } from '../../hooks/useFirestore';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 
 interface SidebarTaskItemProps {
   task: Task;
@@ -21,7 +21,7 @@ const SidebarTaskItem: React.FC<SidebarTaskItemProps> = ({
 }) => {
   const { userProfile } = useAuth();
   const { updateDocument } = useFirestoreOperations('tasks');
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
 
   const isCompleted = task.status === 'Completed';
   const isOverdue = isPast(task.dueDate) && !isCompleted;
