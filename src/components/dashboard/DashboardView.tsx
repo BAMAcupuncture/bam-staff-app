@@ -17,22 +17,32 @@ const StatCard: React.FC<{ title: string; value: number | string; icon: React.Re
 );
 
 const DashboardView: React.FC = () => {
+  // --- Start of Debugging Code ---
+  console.log('DashboardView: Component is rendering...');
+
   const { userProfile } = useAuth();
   const { data: tasks, loading: tasksLoading } = useCollection<Task>('tasks');
   const { data: goals, loading: goalsLoading } = useCollection<Goal>('goals');
   const { data: team, loading: teamLoading } = useCollection<TeamMember>('team');
+  
+  console.log('DashboardView: Data from hooks:', { tasks, goals, team, userProfile });
 
   const loading = tasksLoading || goalsLoading || teamLoading;
 
-  // By adding (tasks || []) we ensure we are always filtering an array, even if data is not yet loaded.
-  const userTasks = (tasks || []).filter(task => task.assigneeId === userProfile?.uid);
-  const completedTasks = (userTasks || []).filter(task => task.status === 'Completed').length;
-  const activeGoals = (goals || []).filter(goal => goal.status === 'active').length;
-  const activeTeamMembers = (team || []).filter(member => member.status === 'active').length;
-
-  if (loading) {
-    return <div>Loading dashboard...</div>;
+  // This is a "guard clause" to prevent the error.
+  // If any of these lists are not yet available, we show a loading screen.
+  if (loading || !tasks || !goals || !team) {
+    console.log('DashboardView: Data is loading or not available yet. Showing loader.');
+    return <div>Loading dashboard data...</div>;
   }
+  
+  console.log('DashboardView: Data is loaded. Proceeding to render.');
+  // --- End of Debugging Code ---
+
+  const userTasks = tasks.filter(task => task.assigneeId === userProfile?.uid);
+  const completedTasks = userTasks.filter(task => task.status === 'Completed').length;
+  const activeGoals = goals.filter(goal => goal.status === 'active').length;
+  const activeTeamMembers = team.filter(member => member.status === 'active').length;
 
   return (
     <div>
