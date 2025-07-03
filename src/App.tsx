@@ -38,19 +38,20 @@ const AppLoader: React.FC = () => (
 
 const ProtectedRoute: React.FC = () => {
   const { user, userProfile, loading } = useAuth();
+
   if (loading) return <AppLoader />;
   if (!user) return <Navigate to="/login" replace />;
   if (!userProfile) return <ProfileSetup />;
+
+  // The corrected structure stacks everything vertically
   return (
-    <>
+    <div>
       <Header />
-      <div className="flex">
-        <Navigation />
-        <main className="flex-1 p-8">
-            <Outlet />
-        </main>
-      </div>
-    </>
+      <Navigation />
+      <main className="p-8">
+        <Outlet />
+      </main>
+    </div>
   );
 };
 
