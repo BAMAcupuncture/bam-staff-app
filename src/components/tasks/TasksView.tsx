@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Plus, Filter, CheckSquare, Edit, Calendar, User, Flag, Search } from 'lucide-react';
-import { useCollection } from '../../hooks/useFirestore';
+import useCollection from '../../hooks/useFirestore';
 import { Task, TeamMember, Goal } from '../../types';
 import { format, isToday, isPast } from 'date-fns';
 import TaskModal from './TaskModal';
