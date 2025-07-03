@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useCollection } from './useFirestore';
+import useCollection from './useFirestore';
 import { Task, Goal, TeamMember } from '../types';
 import { isPast, isToday, addDays } from 'date-fns';
 
