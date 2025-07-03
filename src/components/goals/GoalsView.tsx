@@ -1,7 +1,7 @@
 // src/components/goals/GoalsView.tsx
 import React, { useState, useMemo } from 'react';
 import { Plus, Target, TrendingUp, Calendar, Filter, Search, BarChart3 } from 'lucide-react';
-import { useCollection } from '../../hooks/useFirestore';
+import  useCollection  from '../../hooks/useFirestore';
 import { Goal, Task } from '../../types';
 import GoalCard from './GoalCard';
 import GoalModal from './GoalModal';
