@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { collection, onSnapshot, Query, query, where, orderBy } from 'firebase/firestore';
-import { firestore } from '../config/firebase'; // Correctly import 'firestore'
+import { firestore } from '../config/firebase';
 
-// This hook was previously named useCollection in our discussion,
-// but the error log refers to it as useFirestore.ts. This code will work for either.
-const useFirestore = <T>(
+// Renaming the function back to useCollection to match what your components expect
+const useCollection = <T>(
   collectionName: string,
   condition?: [string, any, any],
   sort?: [string, any]
@@ -15,14 +14,12 @@ const useFirestore = <T>(
   useEffect(() => {
     setLoading(true);
 
-    let collectionRef: Query = collection(firestore, collectionName); // Use the 'firestore' variable
+    let collectionRef: Query = collection(firestore, collectionName);
 
-    // Apply where condition if provided
     if (condition && condition[1] && condition[2]) {
       collectionRef = query(collectionRef, where(condition[0], condition[1], condition[2]));
     }
 
-    // Apply order by if provided
     if (sort && sort[0] && sort[1]) {
       collectionRef = query(collectionRef, orderBy(sort[0], sort[1]));
     }
@@ -30,7 +27,6 @@ const useFirestore = <T>(
     const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
       const results: T[] = [];
       snapshot.forEach((doc) => {
-        // Here we ensure the date fields from firestore are converted back to JS Date objects
         const docData = doc.data();
         for (const key in docData) {
           if (docData[key]?.toDate && typeof docData[key].toDate === 'function') {
@@ -43,11 +39,12 @@ const useFirestore = <T>(
       setLoading(false);
     });
 
-    // Cleanup subscription on unmount
     return () => unsubscribe();
-  }, [collectionName, JSON.stringify(condition), JSON.stringify(sort)]); // stringify to prevent re-renders
+  }, [collectionName, JSON.stringify(condition), JSON.stringify(sort)]);
 
   return { data, loading };
 };
 
-export default useFirestore;
+// The file is named useFirestore.ts, but we export the function as useCollection
+// to match the import statement in your other components.
+export default useCollection;
