@@ -3,7 +3,7 @@ import { LogOut, User, ChevronDown, Stethoscope, Bell } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 
 const Header: React.FC = () => {
   const { userProfile } = useAuth();
