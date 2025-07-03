@@ -7,7 +7,7 @@ import { useNotification } from '../../context/NotificationContext';
 
 const Header: React.FC = () => {
   const { userProfile } = useAuth();
-  const { notifications } = useNotifications();
+  const { notifications } = useNotification();
   const [showUserMenu, setShowUserMenu] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.read).length;
