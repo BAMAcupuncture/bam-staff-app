@@ -1,67 +1,56 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import { Notification } from '../types';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import { Notification } from '../types'; // Assuming Notification type is in your types/index.ts
 
+// Define the shape of the context data
 interface NotificationContextType {
-  notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
-  removeNotification: (id: string) => void;
-  markAsRead: (id: string) => void;
-  clearAll: () => void;
+  notification: Notification | null;
+  showNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
+  hideNotification: () => void;
 }
 
-const NotificationContext = createContext<NotificationContextType>({
-  notifications: [],
-  addNotification: () => {},
-  removeNotification: () => {},
-  markAsRead: () => {},
-  clearAll: () => {}
-});
+// Create the context
+const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
-export const useNotifications = () => useContext(NotificationContext);
+// This is the custom hook that components will use.
+// We are EXPORTING it so other files can import it with { useNotification }.
+export const useNotification = () => {
+  const context = useContext(NotificationContext);
+  if (context === undefined) {
+    throw new Error('useNotification must be used within a NotificationProvider');
+  }
+  return context;
+};
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+// This is the Provider component that wraps your app.
+// We are EXPORTING it so App.tsx can use it.
+export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [notification, setNotification] = useState<Notification | null>(null);
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: Date.now().toString(),
+  const hideNotification = useCallback(() => {
+    setNotification(null);
+  }, []);
+
+  const showNotification = useCallback((newNotification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
+    const fullNotification: Notification = {
+      ...newNotification,
+      id: new Date().toISOString(), // Simple unique ID
       timestamp: new Date(),
       read: false
     };
+    setNotification(fullNotification);
 
-    setNotifications(prev => [newNotification, ...prev]);
+    // Automatically hide the notification after 5 seconds
+    const timer = setTimeout(() => {
+      hideNotification();
+    }, 5000);
 
-    // Auto-remove after 5 seconds for success notifications
-    if (notification.type === 'success') {
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== newNotification.id));
-      }, 5000);
-    }
-  }, []);
+    // Note: In a real app, you might want to clear this timer if a new notification comes in
+  }, [hideNotification]);
 
-  const removeNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  }, []);
-
-  const markAsRead = useCallback((id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
-  }, []);
-
-  const clearAll = useCallback(() => {
-    setNotifications([]);
-  }, []);
+  const value = { notification, showNotification, hideNotification };
 
   return (
-    <NotificationContext.Provider value={{
-      notifications,
-      addNotification,
-      removeNotification,
-      markAsRead,
-      clearAll
-    }}>
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );
