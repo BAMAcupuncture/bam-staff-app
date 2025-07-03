@@ -24,10 +24,11 @@ const DashboardView: React.FC = () => {
 
   const loading = tasksLoading || goalsLoading || teamLoading;
 
-  const userTasks = tasks.filter(task => task.assigneeId === userProfile?.uid);
-  const completedTasks = userTasks.filter(task => task.status === 'Completed').length;
-  const activeGoals = goals.filter(goal => goal.status === 'active').length;
-  const activeTeamMembers = team.filter(member => member.status === 'active').length;
+  // By adding (tasks || []) we ensure we are always filtering an array, even if data is not yet loaded.
+  const userTasks = (tasks || []).filter(task => task.assigneeId === userProfile?.uid);
+  const completedTasks = (userTasks || []).filter(task => task.status === 'Completed').length;
+  const activeGoals = (goals || []).filter(goal => goal.status === 'active').length;
+  const activeTeamMembers = (team || []).filter(member => member.status === 'active').length;
 
   if (loading) {
     return <div>Loading dashboard...</div>;
@@ -42,7 +43,6 @@ const DashboardView: React.FC = () => {
         <StatCard title="Active Goals" value={activeGoals} icon={<Target />} />
         <StatCard title="Active Team Members" value={activeTeamMembers} icon={<Users />} />
       </div>
-      {/* You can add more dashboard widgets here later */}
     </div>
   );
 };
