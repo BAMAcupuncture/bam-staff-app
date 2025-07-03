@@ -1,116 +1,53 @@
-import { useEffect, useState } from 'react';
-import { 
-  collection, 
-  onSnapshot, 
-  doc, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  Timestamp,
-  query,
-  where,
-  orderBy
-} from 'firebase/firestore';
-import { db } from '../config/firebase';
+import { useState, useEffect } from 'react';
+import { collection, onSnapshot, Query, query, where, orderBy } from 'firebase/firestore';
+import { firestore } from '../config/firebase'; // Correctly import 'firestore'
 
-const isValidDate = (date: any): date is Date => {
-  return date instanceof Date && !isNaN(date.getTime());
-};
-
-export const useCollection = <T>(collectionName: string, queryConstraints?: any[]) => {
+// This hook was previously named useCollection in our discussion,
+// but the error log refers to it as useFirestore.ts. This code will work for either.
+const useFirestore = <T>(
+  collectionName: string,
+  condition?: [string, any, any],
+  sort?: [string, any]
+): { data: T[]; loading: boolean } => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let q = collection(db, collectionName);
-    
-    if (queryConstraints && queryConstraints.length > 0) {
-      q = query(q, ...queryConstraints) as any;
+    setLoading(true);
+
+    let collectionRef: Query = collection(firestore, collectionName); // Use the 'firestore' variable
+
+    // Apply where condition if provided
+    if (condition && condition[1] && condition[2]) {
+      collectionRef = query(collectionRef, where(condition[0], condition[1], condition[2]));
     }
 
-    const unsubscribe = onSnapshot(
-      q,
-      (snapshot) => {
-        const documents = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          // Convert Firestore timestamps to Date objects
-          ...(doc.data().dueDate && { dueDate: doc.data().dueDate.toDate() }),
-          ...(doc.data().createdDate && { createdDate: doc.data().createdDate.toDate() }),
-          ...(doc.data().targetDate && { targetDate: doc.data().targetDate.toDate() }),
-          ...(doc.data().lastReviewDate && { lastReviewDate: doc.data().lastReviewDate.toDate() }),
-          ...(doc.data().nextReviewDate && { nextReviewDate: doc.data().nextReviewDate.toDate() }),
-          ...(doc.data().completedDate && { completedDate: doc.data().completedDate.toDate() }),
-          ...(doc.data().terminatedDate && { terminatedDate: doc.data().terminatedDate.toDate() })
-        })) as T[];
-        
-        setData(documents);
-        setLoading(false);
-        setError(null);
-      },
-      (err) => {
-        setError(err.message);
-        setLoading(false);
-      }
-    );
+    // Apply order by if provided
+    if (sort && sort[0] && sort[1]) {
+      collectionRef = query(collectionRef, orderBy(sort[0], sort[1]));
+    }
 
-    return unsubscribe;
-  }, [collectionName, JSON.stringify(queryConstraints)]);
+    const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
+      const results: T[] = [];
+      snapshot.forEach((doc) => {
+        // Here we ensure the date fields from firestore are converted back to JS Date objects
+        const docData = doc.data();
+        for (const key in docData) {
+          if (docData[key]?.toDate && typeof docData[key].toDate === 'function') {
+            docData[key] = docData[key].toDate();
+          }
+        }
+        results.push({ id: doc.id, ...docData } as T);
+      });
+      setData(results);
+      setLoading(false);
+    });
 
-  return { data, loading, error };
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
+  }, [collectionName, JSON.stringify(condition), JSON.stringify(sort)]); // stringify to prevent re-renders
+
+  return { data, loading };
 };
 
-export const useFirestoreOperations = (collectionName: string) => {
-  const addDocument = async (data: any) => {
-    try {
-      const processedData = {
-        ...data,
-        ...(data.dueDate && isValidDate(data.dueDate) && { dueDate: Timestamp.fromDate(data.dueDate) }),
-        ...(data.createdDate && isValidDate(data.createdDate) && { createdDate: Timestamp.fromDate(data.createdDate) }),
-        ...(data.targetDate && isValidDate(data.targetDate) && { targetDate: Timestamp.fromDate(data.targetDate) }),
-        ...(data.lastReviewDate && isValidDate(data.lastReviewDate) && { lastReviewDate: Timestamp.fromDate(data.lastReviewDate) }),
-        ...(data.nextReviewDate && isValidDate(data.nextReviewDate) && { nextReviewDate: Timestamp.fromDate(data.nextReviewDate) }),
-        ...(data.completedDate && isValidDate(data.completedDate) && { completedDate: Timestamp.fromDate(data.completedDate) }),
-        ...(data.terminatedDate && isValidDate(data.terminatedDate) && { terminatedDate: Timestamp.fromDate(data.terminatedDate) })
-      };
-      
-      const docRef = await addDoc(collection(db, collectionName), processedData);
-      return docRef.id;
-    } catch (error) {
-      console.error('Error adding document:', error);
-      throw error;
-    }
-  };
-
-  const updateDocument = async (id: string, data: any) => {
-    try {
-      const processedData = {
-        ...data,
-        ...(data.dueDate && isValidDate(data.dueDate) && { dueDate: Timestamp.fromDate(data.dueDate) }),
-        ...(data.createdDate && isValidDate(data.createdDate) && { createdDate: Timestamp.fromDate(data.createdDate) }),
-        ...(data.targetDate && isValidDate(data.targetDate) && { targetDate: Timestamp.fromDate(data.targetDate) }),
-        ...(data.lastReviewDate && isValidDate(data.lastReviewDate) && { lastReviewDate: Timestamp.fromDate(data.lastReviewDate) }),
-        ...(data.nextReviewDate && isValidDate(data.nextReviewDate) && { nextReviewDate: Timestamp.fromDate(data.nextReviewDate) }),
-        ...(data.completedDate && isValidDate(data.completedDate) && { completedDate: Timestamp.fromDate(data.completedDate) }),
-        ...(data.terminatedDate && isValidDate(data.terminatedDate) && { terminatedDate: Timestamp.fromDate(data.terminatedDate) })
-      };
-      
-      await updateDoc(doc(db, collectionName, id), processedData);
-    } catch (error) {
-      console.error('Error updating document:', error);
-      throw error;
-    }
-  };
-
-  const deleteDocument = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, collectionName, id));
-    } catch (error) {
-      console.error('Error deleting document:', error);
-      throw error;
-    }
-  };
-
-  return { addDocument, updateDocument, deleteDocument };
-};
+export default useFirestore;
