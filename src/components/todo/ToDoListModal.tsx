@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Folder, Users, User, Lock, Palette, Settings, AlertCircle } from 'lucide-react';
 import { useFirestoreOperations, useCollection } from '../../hooks/useFirestore';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import { ToDoList, TeamMember } from '../../types';
 
 interface ToDoListModalProps {
@@ -15,7 +15,7 @@ const ToDoListModal: React.FC<ToDoListModalProps> = ({ list, onClose, onSuccess 
   const { userProfile } = useAuth();
   const { addDocument, updateDocument } = useFirestoreOperations('todoLists');
   const { data: teamMembers } = useCollection<TeamMember>('team');
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
 
   const [formData, setFormData] = useState({
     title: '',
