@@ -63,4 +63,5 @@ const ProfilePage: React.FC = () => {
     );
 };
 
+// This is the line that was likely missing
 export default ProfilePage;
