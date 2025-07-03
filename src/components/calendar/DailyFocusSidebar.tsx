@@ -16,7 +16,7 @@ const DailyFocusSidebar: React.FC<SidebarProps> = ({
   onAddTask 
 }) => {
   const { userProfile } = useAuth();
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
   const { updateDocument } = useFirestoreOperations('tasks');
   const { 
     getEventsForDate, 
