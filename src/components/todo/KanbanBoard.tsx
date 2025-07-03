@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useCollection, useFirestoreOperations } from '../../hooks/useFirestore';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import { ToDo } from '../../types';
 import TodoColumn from './TodoColumn';
 import TodoCard from './TodoCard';
@@ -15,7 +15,7 @@ const KanbanBoard: React.FC = () => {
   const { userProfile, user } = useAuth();
   const { data: allTodos, loading } = useCollection<ToDo>('todos');
   const { updateDocument } = useFirestoreOperations('todos');
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
 
   const [columns, setColumns] = useState<Record<ColumnId, ToDo[]>>({
     pending: [],
