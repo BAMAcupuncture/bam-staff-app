@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import { Notification } from '../../types';
 
 const NotificationToast: React.FC = () => {
-  const { notifications, removeNotification } = useNotifications();
+  const { notifications, removeNotification } = useNotification();
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
