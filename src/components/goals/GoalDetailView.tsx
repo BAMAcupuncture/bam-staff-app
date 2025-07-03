@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Plus, Target, Calendar, Flag, User, CheckSquare, Clock } from 'lucide-react';
-import { useCollection, useFirestoreOperations } from '../../hooks/useFirestore';
+import useCollection from '../../hooks/useFirestore';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { Goal, Task, TeamMember } from '../../types';
