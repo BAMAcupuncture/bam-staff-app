@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCollection } from '../../hooks/useFirestore';
+import useCollection from '../../hooks/useFirestore';
 import { ToDo } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 
