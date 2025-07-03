@@ -11,7 +11,7 @@ const TeamView: React.FC = () => {
   const { userProfile } = useAuth();
   const { data: teamMembers, loading } = useCollection<TeamMember>('team');
   const { updateDocument, deleteDocument } = useFirestoreOperations('team');
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
 
   const [showModal, setShowModal] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
