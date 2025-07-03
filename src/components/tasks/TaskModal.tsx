@@ -25,7 +25,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const { addDocument, updateDocument } = useFirestoreOperations('tasks');
   const { data: goals } = useCollection<Goal>('goals');
   const { data: fetchedTeamMembers } = useCollection<TeamMember>('team');
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
 
   // Use provided team members or fetch them
   const teamMembers = propTeamMembers || fetchedTeamMembers;
