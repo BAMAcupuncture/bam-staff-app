@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckSquare, Calendar, Target, Users, TrendingUp, Clock } from 'lucide-react';
-import { useCollection } from '../../hooks/useFirestore';
+import  useCollection from '../../hooks/useFirestore';
 import { useAuth } from '../../context/AuthContext';
 import { Task, TeamMember, Goal } from '../../types';
 import { format, isToday, isTomorrow, addDays } from 'date-fns';
