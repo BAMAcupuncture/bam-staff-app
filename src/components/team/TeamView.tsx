@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Users, Shield, UserCheck, UserX, Search, Filter } from 'lucide-react';
-import { useCollection, useFirestoreOperations } from '../../hooks/useFirestore';
+import useCollection from '../../hooks/useFirestore';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import { TeamMember } from '../../types';
