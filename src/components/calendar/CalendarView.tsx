@@ -58,7 +58,7 @@ const GoalDetailModal: React.FC<{ goal: any }> = ({ goal }) => (
 
 const CalendarView: React.FC = () => {
   const navigate = useNavigate();
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
   const { updateDocument } = useFirestoreOperations('tasks');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showFilters, setShowFilters] = useState(false);
