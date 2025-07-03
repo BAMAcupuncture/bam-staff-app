@@ -3,16 +3,19 @@ import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 
-// Import all application components EXCEPT TodoView
+// Import all application components
 import LoginPage from './components/auth/LoginPage';
+import ProfilePage from './components/auth/ProfilePage';
+import ProfileSetup from './components/ProfileSetup';
 import Header from './components/layout/Header';
 import Navigation from './components/layout/Navigation';
 import DashboardView from './components/dashboard/DashboardView';
 import CalendarView from './components/calendar/CalendarView';
 import GoalsView from './components/goals/GoalsView';
 import TeamView from './components/team/TeamView';
-import ProfileSetup from './components/ProfileSetup';
+import TodoView from './components/todo/TodoView';
 import NotificationToast from './components/ui/NotificationToast';
+//... other imports
 
 // ==================================================================
 // DEFINING TodoView DIRECTLY IN THIS FILE TO AVOID IMPORT ERRORS
@@ -64,6 +67,7 @@ const App: React.FC = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<DashboardView />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/calendar" element={<CalendarView />} />
               <Route path="/goals" element={<GoalsView />} />
               <Route path="/team" element={<TeamView />} />
