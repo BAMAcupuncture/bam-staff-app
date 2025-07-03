@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Edit, Plus, Target, Calendar, Flag, User, CheckSquare, Clock } from 'lucide-react';
 import useCollection from '../../hooks/useFirestore';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import { Goal, Task, TeamMember } from '../../types';
 import { format, isPast, isToday } from 'date-fns';
 import GoalModal from './GoalModal';
@@ -104,7 +104,7 @@ const TaskItem: React.FC<{
 }> = ({ task, teamMembers, onEdit }) => {
   const { userProfile } = useAuth();
   const { updateDocument } = useFirestoreOperations('tasks');
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
 
   const assignee = teamMembers.find(member => member.id === task.assigneeId);
   const isCompleted = task.status === 'Completed';
