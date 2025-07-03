@@ -3,7 +3,6 @@ import { format, isToday, isSameDay, isPast } from 'date-fns';
 import { CheckSquare, Clock, User, Flag, Target, Plus, TrendingUp, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCalendarEvents } from '../../hooks/useCalendarEvents';
-import { useFirestoreOperations } from '../../hooks/useFirestore';
 import { useNotifications } from '../../context/NotificationContext';
 import { Task, Goal } from '../../types';
 
