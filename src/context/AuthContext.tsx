@@ -1,90 +1,99 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth, db } from '../config/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { TeamMember } from '../types';
+// src/context/AuthContext.tsx
+
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { auth, firestore } from '../config/firebase';
+import {
+  User,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+} from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+
+// Define the shape of your user profile data
+interface UserProfile {
+  name: string;
+  role: 'Admin' | 'Staff';
+  // Add other profile fields as needed
+}
 
 interface AuthContextType {
   user: User | null;
-  userProfile: TeamMember | null;
-  loading: boolean;
-  error: string | null;
+  userProfile: UserProfile | null;
+s  loading: boolean;
+  login: (email: string, password: string) => Promise<any>;
+  logout: () => Promise<any>;
+  // You can add signup here if needed
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  userProfile: null,
-  loading: true,
-  error: null
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<TeamMember | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setUser(user);
-      setError(null);
-      
-      if (user) {
-        try {
-          // Method 1: Try to find by document ID (user.uid) - This is the preferred method
-          const teamDocRef = doc(db, 'team', user.uid);
-          const teamDoc = await getDoc(teamDocRef);
-          
-          if (teamDoc.exists()) {
-            setUserProfile({ id: teamDoc.id, ...teamDoc.data() } as TeamMember);
-          } else {
-            // Method 2: Try to find by uid field (fallback for existing data)
-            const teamQuery = query(
-              collection(db, 'team'), 
-              where('uid', '==', user.uid)
-            );
-            const teamSnapshot = await getDocs(teamQuery);
-            
-            if (!teamSnapshot.empty) {
-              const doc = teamSnapshot.docs[0];
-              setUserProfile({ id: doc.id, ...doc.data() } as TeamMember);
-            } else {
-              // Method 3: Try to find by email (final fallback)
-              const emailQuery = query(
-                collection(db, 'team'), 
-                where('email', '==', user.email)
-              );
-              const emailSnapshot = await getDocs(emailQuery);
-              
-              if (!emailSnapshot.empty) {
-                const doc = emailSnapshot.docs[0];
-                setUserProfile({ id: doc.id, ...doc.data() } as TeamMember);
-              } else {
-                setUserProfile(null);
-                setError('No profile found in team collection. Please contact your administrator.');
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error fetching user profile:', error);
-          setUserProfile(null);
-          setError(`Database error: ${error.message}`);
+    // This listener is the core of Firebase Auth
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true);
+      if (currentUser) {
+        // User is logged in, set the user object
+        setUser(currentUser);
+        // Now, fetch their profile from Firestore
+        const userDocRef = doc(firestore, 'team', currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          setUserProfile(userDoc.data() as UserProfile);
+        } else {
+          // Handle case where user exists in Auth but not in Firestore 'team' collection
+          setUserProfile(null); 
         }
       } else {
+        // User is logged out
+        setUser(null);
         setUserProfile(null);
       }
-      
       setLoading(false);
     });
 
-    return unsubscribe;
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
+  const login = (email: string, password: string) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const logout = () => {
+    return signOut(auth);
+  };
+
+  const value = {
+    user,
+    userProfile,
+    loading,
+    login,
+    logout,
+  };
+
+  // We don't render anything until the initial loading state is resolved
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, error }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
