@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Calendar, User, Flag, FileText, Target, AlertCircle } from 'lucide-react';
 import useCollection from '../../hooks/useFirestore';
-import { useNotifications } from '../../context/NotificationContext';
+import { useNotification } from '../../context/NotificationContext';
 import { Task, TeamMember, Goal } from '../../types';
 import { format } from 'date-fns';
 
