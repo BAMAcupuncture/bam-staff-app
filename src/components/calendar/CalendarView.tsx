@@ -8,7 +8,6 @@ import { isToday } from 'date-fns';
 import { Filter, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import { useCalendarEvents } from '../../hooks/useCalendarEvents';
 import { useNotifications } from '../../context/NotificationContext';
-import { useFirestoreOperations } from '../../hooks/useFirestore';
 import DailyFocusSidebar from './DailyFocusSidebar';
 import TaskModal from '../tasks/TaskModal';
 import Modal from '../ui/Modal';
