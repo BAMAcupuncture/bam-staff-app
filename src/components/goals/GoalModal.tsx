@@ -12,7 +12,7 @@ interface GoalModalProps {
 
 const GoalModal: React.FC<GoalModalProps> = ({ goal, onClose, onSuccess }) => {
   const { addDocument, updateDocument } = useFirestoreOperations('goals');
-  const { addNotification } = useNotifications();
+  const { addNotification } = useNotification();
 
   const [formData, setFormData] = useState({
     title: '',
