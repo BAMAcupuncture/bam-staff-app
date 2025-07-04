@@ -25,7 +25,6 @@ interface Task {
   status: 'Not Started' | 'In Progress' | 'Completed';
   priority: 'Low' | 'Medium' | 'High';
 }
-// Add other types like Goal, ToDo, etc. as needed
 
 // ==================================================================
 // 2. FIREBASE CONFIG
@@ -45,18 +44,16 @@ const firestore = getFirestore(app);
 // ==================================================================
 // 3. DATA-FETCHING HOOK (useCollection)
 // ==================================================================
-
-// --- THIS IS THE FIX ---
-// We define the return type separately to avoid syntax confusion
 type CollectionResponse<T> = { data: T[]; loading: boolean };
 
-const useCollection = <T>(collectionName: string): CollectionResponse<T> => {
+// Notice the trailing comma after <T,> -- This is the fix.
+const useCollection = <T,>(collectionName: string): CollectionResponse<T> => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    let collectionRef: Query = collection(firestore, collectionName);
+    const collectionRef: Query = collection(firestore, collectionName);
     const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
       const results: T[] = [];
       snapshot.forEach((doc) => {
