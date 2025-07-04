@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { collection, onSnapshot, Query, query, where, orderBy } from 'firebase/firestore';
 import { firestore } from '../config/firebase';
 
-// Renaming the function back to useCollection to match what your components expect
 const useCollection = <T>(
   collectionName: string,
   condition?: [string, any, any],
@@ -13,7 +12,6 @@ const useCollection = <T>(
 
   useEffect(() => {
     setLoading(true);
-
     let collectionRef: Query = collection(firestore, collectionName);
 
     if (condition && condition[1] && condition[2]) {
@@ -26,16 +24,25 @@ const useCollection = <T>(
 
     const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
       const results: T[] = [];
-      snapshot.forEach((doc) => {
-        const docData = doc.data();
-        for (const key in docData) {
-          if (docData[key]?.toDate && typeof docData[key].toDate === 'function') {
-            docData[key] = docData[key].toDate();
+      try {
+        snapshot.forEach((doc) => {
+          const docData = doc.data();
+          for (const key in docData) {
+            if (docData[key]?.toDate && typeof docData[key].toDate === 'function') {
+              docData[key] = docData[key].toDate();
+            }
           }
-        }
-        results.push({ id: doc.id, ...docData } as T);
-      });
-      setData(results);
+          results.push({ id: doc.id, ...docData } as T);
+        });
+        setData(results);
+      } catch (error) {
+        console.error("Error processing documents: ", error);
+      }
+      // This will now run even if there's an error processing the data
+      setLoading(false); 
+    }, (error) => {
+      // This will catch errors with the query itself (e.g. missing index)
+      console.error("Firestore onSnapshot error: ", error);
       setLoading(false);
     });
 
@@ -45,6 +52,4 @@ const useCollection = <T>(
   return { data, loading };
 };
 
-// The file is named useFirestore.ts, but we export the function as useCollection
-// to match the import statement in your other components.
 export default useCollection;
