@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useEffect, createContext, useContext, ReactNode } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, Link, useNavigate } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, updatePassword, sendPasswordResetEmail } from 'firebase/auth';
-import { getFirestore, collection, onSnapshot, Query, query, where, orderBy, doc, getDoc, updateDoc, writeBatch, addDoc, serverTimestamp } from 'firebase/firestore';
-import { format, isPast, isToday } from 'date-fns';
-import { LogOut, User as UserIcon, Bell, CheckSquare, Calendar, Target, Users, Plus } from 'lucide-react';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { getFirestore, collection, onSnapshot, Query, doc, getDoc } from 'firebase/firestore';
+import { LogOut } from 'lucide-react';
 
 // ==================================================================
 // 1. TYPES
@@ -46,29 +45,30 @@ const firestore = getFirestore(app);
 // ==================================================================
 // 3. DATA-FETCHING HOOK (useCollection)
 // ==================================================================
-const useCollection = <T>(collectionName: string): { data: T[]; loading: boolean } => {
+
+// --- THIS IS THE FIX ---
+// We define the return type separately to avoid syntax confusion
+type CollectionResponse<T> = { data: T[]; loading: boolean };
+
+const useCollection = <T>(collectionName: string): CollectionResponse<T> => {
   const [data, setData] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    const collectionRef = collection(firestore, collectionName);
+    let collectionRef: Query = collection(firestore, collectionName);
     const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
       const results: T[] = [];
-      try {
-        snapshot.forEach((doc) => {
-          const docData = doc.data();
-          for (const key in docData) {
-            if (docData[key]?.toDate && typeof docData[key].toDate === 'function') {
-              docData[key] = docData[key].toDate();
-            }
+      snapshot.forEach((doc) => {
+        const docData = doc.data();
+        for (const key in docData) {
+          if (docData[key]?.toDate && typeof docData[key].toDate === 'function') {
+            docData[key] = docData[key].toDate();
           }
-          results.push({ id: doc.id, ...docData } as T);
-        });
-        setData(results);
-      } catch (error) {
-        console.error("Error processing documents:", error);
-      }
+        }
+        results.push({ id: doc.id, ...docData } as T);
+      });
+      setData(results);
       setLoading(false);
     }, (error) => {
       console.error("Firestore onSnapshot error:", error);
@@ -84,19 +84,19 @@ const useCollection = <T>(collectionName: string): { data: T[]; loading: boolean
 // ==================================================================
 interface UserProfile { name: string; role: 'Admin' | 'Staff'; uid: string; }
 interface AuthContextType {
-  user: any | null; // Using 'any' for Firebase User type simplicity here
+  user: any | null;
   userProfile: UserProfile | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<any>;
   logout: () => Promise<any>;
 }
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-export const useAuth = () => {
+const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<any | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -106,11 +106,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (currentUser) {
         const userDocRef = doc(firestore, 'team', currentUser.uid);
         const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          setUserProfile(userDoc.data() as UserProfile);
-        } else {
-          setUserProfile(null);
-        }
+        setUserProfile(userDoc.exists() ? (userDoc.data() as UserProfile) : null);
       } else {
         setUserProfile(null);
       }
@@ -155,7 +151,6 @@ const Navigation: React.FC = () => (
       <div className="flex space-x-8">
         <Link to="/" className="text-gray-500 hover:text-gray-700 px-3 py-4 text-sm font-medium">Dashboard</Link>
         <Link to="/tasks" className="text-gray-500 hover:text-gray-700 px-3 py-4 text-sm font-medium">Tasks</Link>
-        {/* Add other links like /goals, /calendar here */}
       </div>
     </div>
   </nav>
@@ -172,13 +167,10 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     try {
       await login(email, password);
       navigate('/');
-    } catch (err) {
-      setError('Failed to log in.');
-    }
+    } catch (err) { setError('Failed to log in.'); }
   };
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -196,7 +188,6 @@ const LoginPage: React.FC = () => {
     </div>
   );
 };
-
 
 const DashboardView: React.FC = () => {
   const { userProfile } = useAuth();
@@ -259,7 +250,6 @@ const App: React.FC = () => {
           <Route element={<ProtectedRoute />}>
             <Route path="/" element={<DashboardView />} />
             <Route path="/tasks" element={<TasksView />} />
-            {/* Add other routes here */}
           </Route>
         </Routes>
       </Router>
