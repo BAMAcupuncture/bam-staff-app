@@ -43,7 +43,7 @@ const AnalyticsView: React.FC = () => {
   }
 
   // --- 1. Goal Health Calculation ---
-  const activeGoals = goals.filter(g => g.status === 'active' && g.targetDate);
+  const activeGoals = goals(g => g.status === 'active' && g.targetDate);
   const goalHealth = activeGoals.reduce(
     (acc, goal) => {
       const today = new Date();
@@ -62,22 +62,22 @@ const AnalyticsView: React.FC = () => {
   );
 
   // --- 2. Team Workload Calculation ---
-  const activeTasks = tasks.filter(t => t.status !== 'Completed');
+  const activeTasks = tasks(t => t.status !== 'Completed');
   const workload = team
-    .filter(m => m.status === 'active')
+    (m => m.status === 'active')
     .map(member => ({
       name: member.name,
-      taskCount: activeTasks.filter(task => task.assigneeId === member.id).length,
+      taskCount: activeTasks(task => task.assigneeId === member.id).length,
     }))
     .sort((a, b) => b.taskCount - a.taskCount);
 
   // --- 3. Overall Statistics ---
   const totalGoals = goals.length;
-  const completedGoals = goals.filter(g => g.status === 'completed').length;
+  const completedGoals = goals(g => g.status === 'completed').length;
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === 'Completed').length;
-  const activeTeamMembers = team.filter(m => m.status === 'active').length;
-  const overdueTasks = tasks.filter(t => t.dueDate < new Date() && t.status !== 'Completed').length;
+  const completedTasks = tasks(t => t.status === 'Completed').length;
+  const activeTeamMembers = team(m => m.status === 'active').length;
+  const overdueTasks = tasks(t => t.dueDate < new Date() && t.status !== 'Completed').length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -158,8 +158,8 @@ const AnalyticsView: React.FC = () => {
         <h2 className="text-xl font-bold text-gray-800 mb-4">Goal Progress Breakdown</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {goals.map(goal => {
-            const linkedTasksCount = tasks.filter(t => t.goalId === goal.id).length;
-            const completedLinkedTasks = tasks.filter(t => t.goalId === goal.id && t.status === 'Completed').length;
+            const linkedTasksCount = tasks(t => t.goalId === goal.id).length;
+            const completedLinkedTasks = tasks(t => t.goalId === goal.id && t.status === 'Completed').length;
             
             return (
               <div key={goal.id} className="border border-gray-200 rounded-lg p-4">
