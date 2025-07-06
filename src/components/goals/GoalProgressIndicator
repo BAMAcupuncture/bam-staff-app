@@ -1,0 +1,51 @@
+import React from 'react';
+import { Goal } from '../../types';
+import { format } from 'date-fns';
+
+const GoalProgressIndicator: React.FC<{ goal: Goal }> = ({ goal }) => {
+  const { progress, createdDate, targetDate, status } = goal;
+
+  if (status !== 'active' || !targetDate || !createdDate) {
+    return <div className="text-sm text-gray-500 capitalize">{status}</div>;
+  }
+
+  const today = new Date();
+  if (today > targetDate) {
+    return <div className="text-sm font-semibold text-red-600">Overdue</div>;
+  }
+
+  const totalDays = (targetDate.getTime() - createdDate.getTime()) / (1000 * 3600 * 24);
+  const daysPassed = (today.getTime() - createdDate.getTime()) / (1000 * 3600 * 24);
+  const expectedProgress = totalDays > 0 ? Math.min(Math.round((daysPassed / totalDays) * 100), 100) : 0;
+  const variance = (progress || 0) - expectedProgress;
+
+  let statusText = 'On Target';
+  let statusColor = 'bg-green-500';
+
+  if (variance < -25) {
+    statusText = 'Behind';
+    statusColor = 'bg-red-500';
+  } else if (variance < -10) {
+    statusText = 'At Risk';
+    statusColor = 'bg-yellow-500';
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between mb-1">
+        <span className="text-sm font-medium text-gray-700">Progress</span>
+        <span className="text-sm font-medium text-gray-700">{progress || 0}%</span>
+      </div>
+      <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${progress || 0}%` }}></div>
+      </div>
+      <div className="flex items-center mt-2">
+        <div className={`w-3 h-3 rounded-full ${statusColor} mr-2`}></div>
+        <span className="text-sm text-gray-600">{statusText}</span>
+        <span className="text-xs text-gray-400 ml-1">(Expected: {expectedProgress}%)</span>
+      </div>
+    </div>
+  );
+};
+
+export default GoalProgressIndicator;
