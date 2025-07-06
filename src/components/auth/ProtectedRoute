@@ -1,11 +1,9 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-// Import the components it uses
 import Header from '../layout/Header';
 import Navigation from '../layout/Navigation';
-import ProfileSetup from './ProfileSetup'; // <-- Correctly imported
+import ProfileSetup from './ProfileSetup';
 
 const AppLoader: React.FC = () => <div className="flex justify-center items-center h-screen"><p>Loading...</p></div>;
 
@@ -20,20 +18,18 @@ const ProtectedRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // This now uses the imported component
   if (!userProfile) {
     return <ProfileSetup />;
   }
 
+  // This is a simplified layout to prevent parsing errors
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div>
+      <Header />
       <Navigation />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-8">
-          <Outlet />
-        </main>
-      </div>
+      <main className="p-8">
+        <Outlet />
+      </main>
     </div>
   );
 };
