@@ -7,8 +7,7 @@ const useCollection = <T,>(collectionName: string): { data: T[]; loading: boolea
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let collectionRef: Query = collection(firestore, collectionName);
-    
+    const collectionRef: Query = collection(firestore, collectionName);
     const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
       const results: T[] = [];
       snapshot.forEach((doc) => {
@@ -23,13 +22,11 @@ const useCollection = <T,>(collectionName: string): { data: T[]; loading: boolea
       setData(results);
       setLoading(false);
     }, (error) => {
-      console.error("Firestore error:", error);
+      console.error(`Firestore error on collection ${collectionName}:`, error);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, [collectionName]);
-
   return { data, loading };
 };
 
