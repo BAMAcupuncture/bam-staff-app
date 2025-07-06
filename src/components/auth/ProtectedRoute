@@ -1,33 +1,26 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import Header from '../layout/Header';
-import Navigation from '../layout/Navigation';
-import ProfileSetup from './ProfileSetup';
 
-const AppLoader: React.FC = () => <div className="flex justify-center items-center h-screen"><p>Loading...</p></div>;
+interface ProtectedRouteProps {
+  isAuthenticated: boolean;
+  hasProfile: boolean;
+}
 
-const ProtectedRoute: React.FC = () => {
-  const { user, userProfile, loading } = useAuth();
-
-  if (loading) {
-    return <AppLoader />;
-  }
-
-  if (!user) {
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ isAuthenticated, hasProfile }) => {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!userProfile) {
-    return <ProfileSetup />;
+  if (!hasProfile) {
+    return <Navigate to="/profile-setup" replace />;
   }
 
-  // This is a simplified layout to prevent parsing errors
   return (
-    <div>
-      <Header />
-      <Navigation />
-      <main className="p-8">
+    <div className="min-h-screen flex flex-col">
+      <header className="bg-gray-100 shadow p-4">
+        {/* Header content goes here, or remove if not needed */}
+      </header>
+      <main className="p-8 flex-1">
         <Outlet />
       </main>
     </div>
