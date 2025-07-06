@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // <-- The missing import is here
+import { Link, useNavigate } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useAuth } from '../../context/AuthContext';
@@ -28,11 +28,7 @@ const Header: React.FC = () => {
               <p className="text-sm font-medium text-gray-800">{userProfile?.name}</p>
               <p className="text-xs text-gray-500">{userProfile?.role}</p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-              title="Log Out"
-            >
+            <button onClick={handleLogout} className="p-2 rounded-full text-gray-500 hover:bg-gray-700" title="Log Out">
               <LogOut size={24} />
             </button>
           </div>
