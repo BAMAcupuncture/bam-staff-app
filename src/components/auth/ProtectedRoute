@@ -1,11 +1,13 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+
+// Import the components it uses
 import Header from '../layout/Header';
 import Navigation from '../layout/Navigation';
+import ProfileSetup from './ProfileSetup'; // <-- Correctly imported
 
 const AppLoader: React.FC = () => <div className="flex justify-center items-center h-screen"><p>Loading...</p></div>;
-const ProfileSetup: React.FC = () => <div className="p-8"><h2>Profile Setup Required</h2><p>Please contact an administrator to create your team profile.</p></div>;
 
 const ProtectedRoute: React.FC = () => {
   const { user, userProfile, loading } = useAuth();
@@ -18,6 +20,7 @@ const ProtectedRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // This now uses the imported component
   if (!userProfile) {
     return <ProfileSetup />;
   }
