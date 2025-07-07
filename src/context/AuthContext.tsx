@@ -1,49 +1,52 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { auth, firestore } from '../config/firebase';
-import { User, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { TeamMember } from '../types';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
 
-interface AuthContextType {
-  user: User | null;
-  userProfile: TeamMember | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  logout: () => Promise<any>;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
+// REPLACE these with your environment variables or explicit config
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+// Initialize Firebase once
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Auth Context
+interface AuthContextProps {
+  user: User | null;
+  loading: boolean;
+}
+
+const AuthContext = createContext<AuthContextProps>({
+  user: null,
+  loading: true,
+});
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<TeamMember | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        const userDocRef = doc(firestore, 'team', currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        setUserProfile(userDoc.exists() ? (userDoc.data() as TeamMember) : null);
-      } else {
-        setUserProfile(null);
-      }
       setLoading(false);
     });
     return () => unsubscribe();
   }, []);
 
-  const login = (email: string, password: string) => signInWithEmailAndPassword(auth, email, password);
-  const logout = () => signOut(auth);
-
-  const value = { user, userProfile, loading, login, logout };
-
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
