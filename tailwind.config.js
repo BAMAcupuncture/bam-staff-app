@@ -1,18 +1,10 @@
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+module.exports = {
+  content: [
+    "./index.html",
+    "./src/**/*.{ts,tsx}",
+  ],
   theme: {
-    extend: {
-      animation: {
-        'in': 'slideInFromRight 0.3s ease-out',
-      },
-      keyframes: {
-        slideInFromRight: {
-          '0%': { transform: 'translateX(100%)', opacity: '0' },
-          '100%': { transform: 'translateX(0)', opacity: '1' },
-        },
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };
