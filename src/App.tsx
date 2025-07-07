@@ -1,36 +1,51 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-
-// Import all our page components from their new files
-import ProtectedRoute from './components/auth/ProtectedRoute';
 import LoginPage from './components/auth/LoginPage';
+import ProtectedRoute from './components/auth/ProtectedRoute.tsx';
+import SystemAdminRoute from './components/auth/SystemAdminRoute';
+
 import DashboardView from './components/dashboard/DashboardView';
+import GoalsView from './components/goals/GoalsView.tsx/index.ts';
 import TasksView from './components/tasks/TasksView';
-import GoalsView from './components/goals/GoalsView'; // The important import
+import TodoView from './components/todos/TodoView';
+import TeamView from './components/team/TeamView';
+import CalendarView from './components/calendar/CalendarView';
+import ProfileSetup from './components/auth/ProfileSetup.tsx/index.ts';
+import ProfilePage from './components/auth/ProfilePage';
+import SystemPanel from './components/system/SystemPanel';
 
-// Placeholders for pages we haven't built out yet
-const CalendarView: React.FC = () => <div className="p-4"><h1 className="text-2xl font-bold">Calendar</h1></div>;
-const TeamView: React.FC = () => <div className="p-4"><h1 className="text-2xl font-bold">Team</h1></div>;
+import { AuthProvider } from './context/AuthContext';
+import { ProfileProvider } from './context/ProfileContext';
 
-
-const App: React.FC = () => {
+function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/" element={<DashboardView />} />
-            <Route path="/tasks" element={<TasksView />} />
-            <Route path="/goals" element={<GoalsView />} />
-            <Route path="/calendar" element={<CalendarView />} />
-            <Route path="/team" element={<TeamView />} />
-          </Route>
-        </Routes>
-      </Router>
+      <ProfileProvider>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/profile-setup" element={<ProfileSetup />} />
+
+            {/* Protected routes check both Firebase auth and Firestore profile */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="/" element={<DashboardView />} />
+              <Route path="/goals" element={<GoalsView />} />
+              <Route path="/tasks" element={<TasksView />} />
+              <Route path="/todos" element={<TodoView />} />
+              <Route path="/calendar" element={<CalendarView />} />
+              <Route path="/team" element={<TeamView />} />
+              <Route path="/profile" element={<ProfilePage />} />
+
+              {/* System admin routes for the user with isSystemAccount=true */}
+              <Route element={<SystemAdminRoute />}>
+                <Route path="/system-panel" element={<SystemPanel />} />
+              </Route>
+            </Route>
+          </Routes>
+        </Router>
+      </ProfileProvider>
     </AuthProvider>
   );
-};
+}
 
 export default App;
